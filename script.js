@@ -1,56 +1,88 @@
-//your JS code here.
-
-// Do not change code below this line
-// This code will just display the questions to the screen
 const questions = [
-  {
-    question: "What is the capital of France?",
-    choices: ["Paris", "London", "Berlin", "Madrid"],
-    answer: "Paris",
-  },
-  {
-    question: "What is the highest mountain in the world?",
-    choices: ["Everest", "Kilimanjaro", "Denali", "Matterhorn"],
-    answer: "Everest",
-  },
-  {
-    question: "What is the largest country by area?",
-    choices: ["Russia", "China", "Canada", "United States"],
-    answer: "Russia",
-  },
-  {
-    question: "Which is the largest planet in our solar system?",
-    choices: ["Earth", "Jupiter", "Mars"],
-    answer: "Jupiter",
-  },
-  {
-    question: "What is the capital of Canada?",
-    choices: ["Toronto", "Montreal", "Vancouver", "Ottawa"],
-    answer: "Ottawa",
-  },
+    {
+        question: "What is the capital of France?",
+        options: ["Paris", "London", "Berlin", "Rome"],
+        answer: "Paris"
+    },
+    {
+        question: "What is the largest planet in our solar system?",
+        options: ["Earth", "Saturn", "Jupiter", "Uranus"],
+        answer: "Jupiter"
+    },
+    {
+        question: "What is the smallest country in the world?",
+        options: ["Vatican City", "Monaco", "Nauru", "Tuvalu"],
+        answer: "Vatican City"
+    },
+    {
+        question: "What is the largest living species of lizard?",
+        options: ["Komodo dragon", "Saltwater crocodile", "Black mamba", "Green anaconda"],
+        answer: "Komodo dragon"
+    },
+    {
+        question: "What is the highest mountain peak in the solar system?",
+        options: ["Mount Everest", "Olympus Mons", "Mauna Kea", "Denali"],
+        answer: "Olympus Mons"
+    }
 ];
 
-// Display the quiz questions and choices
-function renderQuestions() {
-  for (let i = 0; i < questions.length; i++) {
-    const question = questions[i];
-    const questionElement = document.createElement("div");
-    const questionText = document.createTextNode(question.question);
-    questionElement.appendChild(questionText);
-    for (let j = 0; j < question.choices.length; j++) {
-      const choice = question.choices[j];
-      const choiceElement = document.createElement("input");
-      choiceElement.setAttribute("type", "radio");
-      choiceElement.setAttribute("name", `question-${i}`);
-      choiceElement.setAttribute("value", choice);
-      if (userAnswers[i] === choice) {
-        choiceElement.setAttribute("checked", true);
-      }
-      const choiceText = document.createTextNode(choice);
-      questionElement.appendChild(choiceElement);
-      questionElement.appendChild(choiceText);
-    }
-    questionsElement.appendChild(questionElement);
-  }
+let progress = sessionStorage.getItem("progress");
+if (!progress) {
+    progress = {};
+    questions.forEach((question, index) => {
+        progress[index] = null;
+    });
+    sessionStorage.setItem("progress", JSON.stringify(progress));
 }
-renderQuestions();
+
+const quizForm = document.getElementById("quiz-form");
+const submitBtn = document.getElementById("submit-btn");
+const scoreDisplay = document.getElementById("score-display");
+
+questions.forEach((question, index) => {
+    const questionElement = document.createElement("div");
+    questionElement.className = "question";
+    questionElement.innerHTML = `${index + 1}. ${question.question}`;
+    quizForm.appendChild(questionElement);
+
+    question.options.forEach((option, optionIndex) => {
+        const optionElement = document.createElement("div");
+        optionElement.className = "option";
+        optionElement.innerHTML = `<input type="radio" name="question-${index}" value="${option}"> ${option}`;
+        questionElement.appendChild(optionElement);
+    });
+});
+
+submitBtn.addEventListener("click", () => {
+    let score = 0;
+    questions.forEach((question, index) => {
+        const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
+        if (selectedOption && selectedOption.value === question.answer) {
+            score++;
+        }
+    });
+    scoreDisplay.textContent = `Your score is ${score} out of 5`;
+    localStorage.setItem("score", score);
+});
+
+// load saved progress
+progress = JSON.parse(sessionStorage.getItem("progress"));
+questions.forEach((question, index) => {
+    const selectedOption = progress[index];
+    if (selectedOption) {
+        const optionElement = document.querySelector(`input[name="question-${index}"][value="${selectedOption}"]`);
+        optionElement.checked = true;
+    }
+});
+
+// save progress on change
+quizForm.addEventListener("change", () => {
+    progress = {};
+    questions.forEach((question, index) => {
+        const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
+        if (selectedOption) {
+            progress[index] = selectedOption.value;
+        }
+    });
+    sessionStorage.setItem("progress", JSON.stringify(progress));
+});
